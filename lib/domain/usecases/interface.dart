@@ -10,11 +10,11 @@ abstract class AuthorizeUseCase {
 }
 
 abstract class CreateTodoUseCase {
-  Future<void> call(String text);
+  Future<Todo> call(String text);
 }
 
 abstract class FinishTodoUseCase {
-  Future<void> call(String id);
+  Future<Todo> call(String id);
 }
 
 abstract class DeleteTodoUseCase {

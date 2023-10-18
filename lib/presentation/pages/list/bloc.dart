@@ -11,9 +11,9 @@ class LoadingListPageState implements ListPageBlocState {
 }
 
 class DataListPageState implements ListPageBlocState {
-  final List<Todo> data;
+  final List<Todo> list;
 
-  DataListPageState(this.data);
+  DataListPageState(this.list);
 }
 
 @injectable
@@ -27,6 +27,23 @@ class ListPageBloc extends Cubit<ListPageBlocState> {
     this._finishTodoUseCase,
     this._deleteTodoUseCase,
   ) : super(const LoadingListPageState()) {
+    updateList();
+  }
+
+  void updateList() {
     _getListUseCase().then((list) => emit(DataListPageState(list)));
+  }
+
+  void finish(Todo todo) {
+    if (todo.completed) return;
+    emit(const LoadingListPageState());
+    _finishTodoUseCase(todo.id);
+    updateList();
+  }
+
+  void delete(Todo todo) {
+    emit(const LoadingListPageState());
+    _deleteTodoUseCase(todo.id);
+    updateList();
   }
 }
