@@ -30,8 +30,14 @@ class ListPageBloc extends Cubit<ListPageBlocState> {
     updateList();
   }
 
-  void updateList() {
-    _getListUseCase().then((list) => emit(DataListPageState(list)));
+  void updateList({bool? isCompleted}) {
+    _getListUseCase().then((list) {
+      if (isCompleted == null) {
+        return emit(DataListPageState(list));
+      }
+      emit(DataListPageState(
+          list.where((e) => e.completed == isCompleted).toList()));
+    });
   }
 
   void finish(Todo todo) {

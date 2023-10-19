@@ -7,3 +7,7 @@ abstract class TodoRepository {
   Future<void> deleteTodo(String id);
   Future<List<Todo>> getList();
 }
+
+abstract class AuthRepository {
+  Future<bool> authorizeLocal();
+}

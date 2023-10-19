@@ -6,9 +6,33 @@ import 'package:todolist/internal/di.dart';
 import '../../routing/router.gr.dart';
 import 'bloc.dart';
 
+enum FilterByCompletion {
+  all('All'),
+  completed('Completed'),
+  uncompleted('Uncompleted');
+
+  const FilterByCompletion(this.text);
+
+  final String text;
+}
+
 @RoutePage()
-class ListPage extends StatelessWidget {
+class ListPage extends StatefulWidget {
   const ListPage({super.key});
+
+  @override
+  State<ListPage> createState() => _ListPageState();
+}
+
+class _ListPageState extends State<ListPage> {
+  final _completionFilterItems = FilterByCompletion.values
+      .map((e) => DropdownMenuItem(
+            value: e,
+            child: Text(e.text),
+          ))
+      .toList();
+
+  FilterByCompletion _filterByCompletion = FilterByCompletion.all;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +54,18 @@ class ListPage extends StatelessWidget {
               final bloc = context.read<ListPageBloc>();
               final wasCreated =
                   await context.router.push(const NewTodoRoute());
-              if (wasCreated == true) bloc.updateList();
+              if (wasCreated != true) return;
+              switch (_filterByCompletion) {
+                case FilterByCompletion.all:
+                  bloc.updateList();
+                  break;
+                case FilterByCompletion.completed:
+                  bloc.updateList(isCompleted: true);
+                  break;
+                case FilterByCompletion.uncompleted:
+                  bloc.updateList(isCompleted: false);
+                  break;
+              }
             },
           ),
           body: switch (state) {
@@ -40,9 +75,35 @@ class ListPage extends StatelessWidget {
             DataListPageState s => SingleChildScrollView(
                 child: Column(
                   children: [
-                    if (s.list.isNotEmpty)
-                      const ListDivider()
-                    else
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        const Text('Show'),
+                        const SizedBox(width: 20),
+                        DropdownButton(
+                          value: _filterByCompletion,
+                          items: _completionFilterItems,
+                          onChanged: (v) {
+                            if (v == null || _filterByCompletion == v) return;
+                            _filterByCompletion = v;
+                            final bloc = context.read<ListPageBloc>();
+                            switch (_filterByCompletion) {
+                              case FilterByCompletion.all:
+                                bloc.updateList();
+                                break;
+                              case FilterByCompletion.completed:
+                                bloc.updateList(isCompleted: true);
+                                break;
+                              case FilterByCompletion.uncompleted:
+                                bloc.updateList(isCompleted: false);
+                                break;
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                    const ListDivider(),
+                    if (s.list.isEmpty)
                       Container(
                         alignment: Alignment.center,
                         margin: const EdgeInsets.only(top: 20),
